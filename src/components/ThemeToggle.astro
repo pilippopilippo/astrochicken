@@ -1,0 +1,119 @@
+---
+// Light/dark switch. The initial theme is applied by the inline script in BaseHead.astro;
+// the button is hidden until this script runs, so it never shows up without JavaScript.
+---
+
+<button type="button" class="theme-toggle" aria-label="Switch theme" hidden>
+	<!-- Moon: shown in the light theme (switches to dark) -->
+	<svg class="icon-moon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+		<path
+			d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"></path>
+	</svg>
+	<!-- Sun: shown in the dark theme (switches to light) -->
+	<svg class="icon-sun" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+		<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+			<circle cx="12" cy="12" r="4.5"></circle>
+			<path
+				d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+			></path>
+		</g>
+	</svg>
+</button>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+	const root = document.documentElement;
+
+	const label = () =>
+		root.dataset.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+
+	if (button) {
+		button.hidden = false;
+		button.setAttribute('aria-label', label());
+		button.addEventListener('click', () => {
+			const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+			const apply = () => {
+				root.dataset.theme = next;
+				button.setAttribute('aria-label', label());
+			};
+			try {
+				localStorage.setItem('theme', next);
+			} catch {
+				// Storage unavailable (e.g. private mode): the choice lasts for this page only
+			}
+			if (!document.startViewTransition) {
+				apply();
+				return;
+			}
+			// Cross-fade the whole page between the two themes, and spin the icon in
+			// (with reduced motion the icon only fades in, see CSS)
+			root.classList.add('theme-switching');
+			document.startViewTransition(apply).finished.finally(() => {
+				root.classList.remove('theme-switching');
+			});
+		});
+		// Keep the label right if the theme follows a device change
+		new MutationObserver(() => button.setAttribute('aria-label', label())).observe(root, {
+			attributes: true,
+			attributeFilter: ['data-theme'],
+		});
+	}
+</script>
+
+<style>
+	.theme-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		color: rgb(var(--black));
+		background: none;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+	}
+	.theme-toggle[hidden] {
+		display: none;
+	}
+	.theme-toggle:hover {
+		color: var(--accent);
+	}
+	.theme-toggle:focus-visible {
+		outline: 2px solid var(--accent);
+	}
+	.icon-sun {
+		display: none;
+	}
+	:global([data-theme='dark']) .icon-sun {
+		display: block;
+	}
+	:global([data-theme='dark']) .icon-moon {
+		display: none;
+	}
+	:global(.theme-switching) .theme-toggle svg {
+		animation: icon-spin-in 0.35s ease-out;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		:global(.theme-switching) .theme-toggle svg {
+			animation-name: icon-fade-in;
+		}
+	}
+	@keyframes icon-fade-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes icon-spin-in {
+		from {
+			transform: rotate(-90deg) scale(0.5);
+			opacity: 0;
+		}
+	}
+</style>

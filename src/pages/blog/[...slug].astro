@@ -1,0 +1,34 @@
+---
+import { render } from 'astro:content';
+import BlogPost from '../../layouts/BlogPost.astro';
+import { type Post, getPublishedPosts, readingMinutes } from '../../utils/posts';
+
+export async function getStaticPaths() {
+	const posts = await getPublishedPosts();
+	// Posts are sorted newest first: the previous item is newer, the next one older
+	return posts.map((post, i) => ({
+		params: { slug: post.id },
+		props: { post, newer: posts[i - 1], older: posts[i + 1] },
+	}));
+}
+
+interface Props {
+	post: Post;
+	newer?: Post;
+	older?: Post;
+}
+
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const link = (p?: Post) => p && { title: p.data.title, url: `/blog/${p.id}/` };
+---
+
+<BlogPost
+	{...post.data}
+	postId={post.id}
+	readingTime={readingMinutes(post)}
+	newer={link(newer)}
+	older={link(older)}
+>
+	<Content />
+</BlogPost>

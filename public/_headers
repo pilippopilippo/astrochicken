@@ -1,0 +1,16 @@
+# Basic security headers for every page (the build adds long-term caching for /_astro/*)
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Frame-Options: SAMEORIGIN
+  Strict-Transport-Security: max-age=31536000
+
+# Fonts rarely change: let browsers keep them for 30 days
+/fonts/*
+  Cache-Control: public, max-age=2592000
+
+# Writing panel: never in search results, and always the latest settings
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-cache

@@ -1,0 +1,12 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"include": [".astro/types.d.ts", "**/*"],
+	"exclude": ["dist"],
+	"compilerOptions": {
+		"strictNullChecks": true,
+		// Shared images uploaded in the writing panel, e.g. "@assets/images/logo.png" (public/admin/config.yml)
+		"paths": {
+			"@assets/*": ["./src/assets/*"]
+		}
+	}
+}

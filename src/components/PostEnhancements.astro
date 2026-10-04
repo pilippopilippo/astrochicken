@@ -1,0 +1,275 @@
+---
+// Article page extras:
+// - click an image to open it full screen at its highest available resolution (it grows
+//   from its position on the page and shrinks back when closed)
+// - "Copy" button on every code block
+// - "#" link next to each section heading, to link straight to that section
+---
+
+<!-- The preview <img> is created by the script, so the page never contains an image without src -->
+<dialog class="lightbox" aria-label="Image preview"></dialog>
+
+<script>
+	// Pick the widest candidate from srcset (the original resolution), falling back to src
+	function largestSource(img: HTMLImageElement): string {
+		let best = img.currentSrc || img.src;
+		let bestWidth = 0;
+		for (const candidate of img.srcset.split(',')) {
+			const [url, descriptor] = candidate.trim().split(/\s+/);
+			const width = parseInt(descriptor ?? '', 10);
+			if (url && width > bestWidth) {
+				best = url;
+				bestWidth = width;
+			}
+		}
+		return best;
+	}
+
+	const dialog = document.querySelector<HTMLDialogElement>('dialog.lightbox');
+	const preview = document.createElement('img');
+	preview.alt = '';
+	dialog?.appendChild(preview);
+	// Visible close button (clicking anywhere or Esc also close it)
+	const closeButton = document.createElement('button');
+	closeButton.type = 'button';
+	closeButton.className = 'lightbox-close';
+	closeButton.setAttribute('aria-label', 'Close image');
+	closeButton.textContent = '×';
+	dialog?.appendChild(closeButton);
+
+	if (dialog && preview) {
+		const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+		const duration = 250;
+		let source: HTMLImageElement | null = null;
+
+		// Transform that places the full-screen preview exactly over the thumbnail
+		const fromThumbnail = () => {
+			if (!source) return 'none';
+			const from = source.getBoundingClientRect();
+			const to = preview.getBoundingClientRect();
+			if (!to.width || !to.height) return 'none';
+			const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+			const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+			return `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+		};
+
+		const open = (img: HTMLImageElement) => {
+			source = img;
+			// Start from the already loaded thumbnail, then swap in the full-resolution file
+			preview.src = img.currentSrc || img.src;
+			preview.alt = img.dataset.description ?? '';
+			// Known proportions right away, so the opening animation can be measured
+			preview.width = img.naturalWidth || img.width;
+			preview.height = img.naturalHeight || img.height;
+			const full = largestSource(img);
+			if (full !== preview.src) {
+				const loader = new Image();
+				loader.onload = () => {
+					if (dialog.open && source === img) preview.src = full;
+				};
+				loader.src = full;
+			}
+			dialog.showModal();
+			closeButton.focus({ preventScroll: true });
+			// With reduced motion the image only fades in, without growing from its position
+			if (!reduceMotion.matches) {
+				preview.animate([{ transform: fromThumbnail() }, { transform: 'none' }], {
+					duration,
+					easing: 'cubic-bezier(0.2, 0, 0, 1)',
+				});
+			}
+			dialog.animate([{ opacity: 0 }, { opacity: 1 }], { duration, easing: 'ease-out' });
+		};
+
+		const close = () => {
+			if (!dialog.open || dialog.classList.contains('closing')) return;
+			dialog.classList.add('closing');
+			if (!reduceMotion.matches) {
+				preview.animate([{ transform: 'none' }, { transform: fromThumbnail() }], {
+					duration: 200,
+					easing: 'cubic-bezier(0.4, 0, 1, 1)',
+					fill: 'forwards',
+				});
+			}
+			dialog
+				.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: 'ease-in', fill: 'forwards' })
+				.finished.then(() => {
+					dialog.classList.remove('closing');
+					dialog.close();
+					dialog.getAnimations().forEach((animation) => animation.cancel());
+					preview.getAnimations().forEach((animation) => animation.cancel());
+				});
+		};
+
+		// Any click (on the image or the backdrop) or Esc closes it, with the reverse animation
+		dialog.addEventListener('click', close);
+		dialog.addEventListener('cancel', (event) => {
+			event.preventDefault();
+			close();
+		});
+		dialog.addEventListener('close', () => {
+			preview.removeAttribute('src');
+			source?.focus({ preventScroll: true });
+			source = null;
+		});
+
+		for (const img of document.querySelectorAll<HTMLImageElement>('article img')) {
+			img.classList.add('zoomable');
+			img.tabIndex = 0;
+			img.setAttribute('role', 'button');
+			// An image without a description (e.g. a cover) can't be a button with alt="";
+			// give it a text alternative describing the action
+			img.dataset.description = img.alt;
+			if (!img.alt) img.alt = 'Enlarge image';
+			img.addEventListener('click', () => open(img));
+			img.addEventListener('keydown', (event) => {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					open(img);
+				}
+			});
+		}
+	}
+
+	for (const heading of document.querySelectorAll<HTMLHeadingElement>('.prose :is(h2, h3, h4)[id]')) {
+		const anchor = document.createElement('a');
+		anchor.className = 'heading-anchor';
+		anchor.href = `#${heading.id}`;
+		anchor.setAttribute('aria-label', `Link to section: ${heading.textContent?.trim()}`);
+		anchor.textContent = '#';
+		heading.appendChild(anchor);
+	}
+
+	for (const pre of document.querySelectorAll<HTMLPreElement>('article pre')) {
+		// Wrap the block so the button stays put when the code scrolls horizontally
+		const wrapper = document.createElement('div');
+		wrapper.className = 'code-block';
+		pre.replaceWith(wrapper);
+		wrapper.appendChild(pre);
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'copy-button';
+		// Screen readers announce the 'Copied!' feedback
+		button.setAttribute('aria-live', 'polite');
+		button.textContent = 'Copy';
+		button.addEventListener('click', async () => {
+			const text = (pre.querySelector('code') ?? pre).textContent ?? '';
+			try {
+				await navigator.clipboard.writeText(text);
+				button.textContent = 'Copied!';
+			} catch {
+				button.textContent = 'Error';
+			}
+			setTimeout(() => (button.textContent = 'Copy'), 2000);
+		});
+		wrapper.appendChild(button);
+	}
+</script>
+
+<style is:global>
+	article img.zoomable {
+		cursor: zoom-in;
+	}
+	dialog.lightbox {
+		max-width: 100vw;
+		max-height: 100vh;
+		width: 100vw;
+		height: 100vh;
+		margin: 0;
+		padding: 0;
+		border: none;
+		background: transparent;
+		cursor: zoom-out;
+	}
+	dialog.lightbox[open] {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	dialog.lightbox::backdrop {
+		background: rgba(0, 0, 0, 0.85);
+	}
+	/* The backdrop fades together with the dialog (opacity animated from the script) */
+	dialog.lightbox[open]::backdrop {
+		transition: opacity 0.25s ease;
+	}
+	dialog.lightbox.closing::backdrop {
+		opacity: 0;
+	}
+	@starting-style {
+		dialog.lightbox[open]::backdrop {
+			opacity: 0;
+		}
+	}
+	dialog.lightbox img {
+		will-change: transform;
+	}
+	dialog.lightbox img {
+		max-width: 95vw;
+		max-height: 95vh;
+		width: auto;
+		height: auto;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.lightbox-close {
+		position: fixed;
+		top: 0.75rem;
+		right: 0.75rem;
+		width: 44px;
+		height: 44px;
+		font-size: 1.75rem;
+		line-height: 1;
+		color: #fff;
+		background: rgba(0, 0, 0, 0.6);
+		border: 1px solid rgba(255, 255, 255, 0.4);
+		border-radius: 50%;
+		cursor: pointer;
+	}
+	.heading-anchor {
+		margin-left: 0.3em;
+		font-weight: 400;
+		color: rgb(var(--gray));
+		text-decoration: none;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+	:is(h2, h3, h4):hover .heading-anchor,
+	.heading-anchor:focus-visible {
+		opacity: 1;
+	}
+	/* Touch screens have no hover: keep the link visible */
+	@media (hover: none) {
+		.heading-anchor {
+			opacity: 1;
+		}
+	}
+	.code-block {
+		position: relative;
+	}
+	.copy-button {
+		position: absolute;
+		top: 0.5em;
+		right: 0.5em;
+		padding: 0.25em 0.75em;
+		font: inherit;
+		font-size: 0.8em;
+		color: #f0f3f6;
+		background: #2e2e2d;
+		border: 1px solid #5a5a58;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: border-color 0.2s ease;
+	}
+	.code-block:hover .copy-button,
+	.copy-button:focus-visible {
+		border-color: #8a8a87;
+	}
+	/* Invisible extension of the touch area to at least 44x44px (WCAG 2.5.5, AAA) */
+	.copy-button::after {
+		content: '';
+		position: absolute;
+		inset: -8px -4px;
+	}
+</style>

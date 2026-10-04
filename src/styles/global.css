@@ -1,0 +1,393 @@
+/*
+  The CSS in this style tag is based off of Bear Blog's default CSS.
+  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
+  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
+ */
+
+:root {
+	color-scheme: light;
+	/* Persimmon orange for decorative elements (bars, borders, indicators: 3:1 is enough) */
+	--accent: #b84a12;
+	--accent-dark: #8a370d;
+	/* Accent for text and links: at least 7:1 on every background, hover included (WCAG AAA) */
+	--accent-text: #8b380e;
+	/* Text on an accent-colored background */
+	--on-accent: #fff;
+	/* Neutral grays, matching the dark theme */
+	--black: 22, 22, 22;
+	/* Secondary text (dates, author, footer): 7:1 on white and on the hover surface */
+	--gray: 82, 82, 79;
+	--gray-light: 236, 236, 234;
+	--gray-dark: 43, 43, 41;
+	/* Page background and raised surfaces (header, menus) */
+	--bg: #fff;
+	--surface: #fff;
+	/* Card background on hover (Material-style elevation: raised = lighter/tinted surface) */
+	--hover-surface: #f3f3f1;
+	/* Shadows stay dark in both themes */
+	--shadow: 22, 22, 22;
+	--box-shadow:
+		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
+		0 16px 32px rgba(var(--gray), 33%);
+}
+
+/*
+  Dark theme. data-theme is set on <html> by the script in BaseHead.astro: it follows the
+  device setting unless the visitor picked a theme with the toggle in the header.
+  The media query is the fallback for when JavaScript is disabled.
+*/
+:root[data-theme="dark"] {
+	color-scheme: dark;
+	--accent: #f08a4b;
+	--accent-dark: #f6b38a;
+	--accent-text: #f2965e;
+	--on-accent: #161616;
+	--black: 245, 245, 243;
+	--gray: 173, 173, 171;
+	--gray-light: 48, 48, 46;
+	--gray-dark: 224, 224, 221;
+	--bg: #161616;
+	--surface: #20201f;
+	--hover-surface: #222221;
+	--box-shadow:
+		0 2px 6px rgba(0, 0, 0, 40%), 0 8px 24px rgba(0, 0, 0, 50%), 0 16px 32px rgba(0, 0, 0, 50%);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		color-scheme: dark;
+		--accent: #f08a4b;
+		--accent-dark: #f6b38a;
+	--accent-text: #f2965e;
+		--on-accent: #161616;
+		--black: 245, 245, 243;
+		--gray: 173, 173, 171;
+		--gray-light: 48, 48, 46;
+		--gray-dark: 224, 224, 221;
+		--bg: #161616;
+		--surface: #20201f;
+		--hover-surface: #222221;
+		--box-shadow:
+			0 2px 6px rgba(0, 0, 0, 40%), 0 8px 24px rgba(0, 0, 0, 50%), 0 16px 32px rgba(0, 0, 0, 50%);
+	}
+}
+@font-face {
+	font-family: "Atkinson";
+	/* Atkinson Hyperlegible (SIL Open Font License), Latin subset in WOFF2, from Fontsource */
+	src: url("/fonts/atkinson-regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Atkinson";
+	src: url("/fonts/atkinson-bold.woff2") format("woff2");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+/* True italics (otherwise the browser slants the regular font); only downloaded when used */
+@font-face {
+	font-family: "Atkinson";
+	src: url("/fonts/atkinson-italic.woff2") format("woff2");
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Atkinson";
+	src: url("/fonts/atkinson-bold-italic.woff2") format("woff2");
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
+}
+body {
+	font-family: "Atkinson", sans-serif;
+	margin: 0;
+	padding: 0;
+	text-align: left;
+	/* Solid page background, no gradient */
+	background: var(--bg);
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	color: rgb(var(--gray-dark));
+	/* 18px body text (16px is the minimum, 18-20px the usual range for long-form reading;
+	   Atkinson's tall x-height makes it look larger than most fonts at the same size) */
+	font-size: 18px;
+	line-height: 1.7;
+}
+main {
+	width: 720px;
+	max-width: calc(100% - 2em);
+	margin: auto;
+	padding: 3em 1em;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0 0 0.5rem 0;
+	color: rgb(var(--black));
+	line-height: 1.2;
+	/* Even line lengths in multi-line titles (no single orphan word) */
+	text-wrap: balance;
+	/* Linked headings (#section) don't end up under the top of the window */
+	scroll-margin-top: 1.5rem;
+}
+/* Major-third type scale (x1.25): 44 / 35 / 28 / 22.5 / 20px on desktop */
+h1 {
+	font-size: 2.441em;
+}
+h2 {
+	font-size: 1.953em;
+}
+h3 {
+	font-size: 1.563em;
+}
+h4 {
+	font-size: 1.25em;
+}
+h5 {
+	font-size: 1.1em;
+}
+strong,
+b {
+	font-weight: 700;
+}
+a {
+	color: var(--accent-text);
+}
+a:hover {
+	color: var(--accent-text);
+}
+/*
+  Links inside articles: a thin, faint underline is always visible (links must not rely on
+  color alone), and on hover a full underline draws from left to right.
+*/
+.prose a:not(.tag, .heading-anchor) {
+	text-decoration: none;
+	background-image:
+		linear-gradient(currentColor, currentColor),
+		linear-gradient(color-mix(in srgb, currentColor 40%, transparent), color-mix(in srgb, currentColor 40%, transparent));
+	background-size:
+		0% 2px,
+		100% 1px;
+	background-position:
+		0 100%,
+		0 100%;
+	background-repeat: no-repeat;
+	padding-bottom: 1px;
+	transition: background-size 0.25s ease-out;
+}
+.prose a:not(.tag, .heading-anchor):hover,
+.prose a:not(.tag, .heading-anchor):focus-visible {
+	background-size:
+		100% 2px,
+		100% 1px;
+}
+p {
+	margin-bottom: 1em;
+}
+.prose p,
+.prose li {
+	/* Avoids a lonely last word and smooths ragged line endings */
+	text-wrap: pretty;
+}
+.prose p {
+	margin-bottom: 2em;
+}
+textarea {
+	width: 100%;
+	font-size: 16px;
+}
+input {
+	font-size: 16px;
+}
+table {
+	width: 100%;
+}
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+/* Code: monospaced fonts look bigger than text at the same size, so ~87.5% of the body size */
+code,
+pre {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+	font-size: 0.875em;
+}
+code {
+	padding: 2px 5px;
+	background-color: rgb(var(--gray-light));
+	border-radius: 2px;
+}
+pre {
+	padding: 1.5em;
+	border-radius: 8px;
+	line-height: 1.6;
+}
+pre > code {
+	all: unset;
+}
+blockquote {
+	border-left: 4px solid var(--accent);
+	padding: 0 0 0 20px;
+	margin: 0px;
+	/* Quotes inside an article stay at text size; the bar and indent set them apart */
+	font-size: 1em;
+}
+hr {
+	border: none;
+	border-top: 1px solid rgb(var(--gray-light));
+}
+@media (max-width: 720px) {
+	body {
+		font-size: 17px;
+	}
+	/* Flatter scale on phones so titles don't take several lines: 34 / 27 / 23 / 19.5px */
+	h1 {
+		font-size: 2em;
+	}
+	h2 {
+		font-size: 1.6em;
+	}
+	h3 {
+		font-size: 1.35em;
+	}
+	h4 {
+		font-size: 1.15em;
+	}
+	h5 {
+		font-size: 1.05em;
+	}
+	main {
+		padding: 1em;
+	}
+}
+
+.sr-only {
+	border: 0;
+	padding: 0;
+	margin: 0;
+	position: absolute !important;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
+	clip: rect(1px 1px 1px 1px);
+	/* maybe deprecated but we need to support legacy browsers */
+	clip: rect(1px, 1px, 1px, 1px);
+	/* modern browsers, clip-path works inwards from each corner */
+	clip-path: inset(50%);
+	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
+	white-space: nowrap;
+}
+
+/* Code blocks: neutral dark gray in both themes instead of the highlighter's blue-gray */
+.astro-code {
+	background-color: #20201f !important;
+}
+
+/*
+  Page transitions (View Transitions API): pages cross-fade when navigating, and a post's
+  cover image morphs from its card on the home page into the article header.
+  Browsers without support simply change page as usual.
+*/
+@view-transition {
+	navigation: auto;
+}
+::view-transition-group(*) {
+	animation-duration: 0.3s;
+}
+
+/*
+  Reduced motion (e.g. Windows "Animation effects" off, iOS/Android "Reduce motion"):
+  following WCAG guidance, movement is removed but gentle fades stay. Here: pages still
+  cross-fade, but covers don't fly into the article. Each component handles its own effects.
+*/
+@media (prefers-reduced-motion: reduce) {
+	img[style*="view-transition-name"] {
+		view-transition-name: none !important;
+	}
+	html {
+		scroll-behavior: auto;
+	}
+}
+
+/* Keyboard focus: one clear, consistent ring (mouse clicks don't show it) */
+:focus-visible {
+	outline: 2px solid var(--accent-text);
+	outline-offset: 2px;
+}
+::selection {
+	color: rgb(var(--black));
+	background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+/* On phones, long words in articles can break at syllables instead of overflowing */
+@media (max-width: 720px) {
+	.prose {
+		hyphens: auto;
+	}
+}
+/* Smooth jumps to #sections, only when motion isn't reduced */
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+/* Printing an article: just the text and images, black on white, with link addresses */
+@media print {
+	:root {
+		color-scheme: light;
+		--bg: #fff;
+		--black: 0, 0, 0;
+		--gray-dark: 0, 0, 0;
+		--gray: 60, 60, 60;
+	}
+	body {
+		font-size: 12pt;
+		background: #fff;
+	}
+	header,
+	footer,
+	.skip-link,
+	.reading-progress,
+	.copy-button,
+	.tag-list,
+	dialog {
+		display: none !important;
+	}
+	main {
+		width: auto;
+		max-width: none;
+		padding: 0;
+	}
+	.prose a[href^="http"]::after {
+		content: " (" attr(href) ")";
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+	}
+	/* Printers usually skip backgrounds: light code text would vanish on white paper */
+	pre.astro-code,
+	pre.astro-code span {
+		color: #000 !important;
+		background: #fff !important;
+	}
+	pre.astro-code {
+		border: 1px solid #999;
+	}
+	pre,
+	blockquote,
+	img,
+	table {
+		break-inside: avoid;
+	}
+	h1,
+	h2,
+	h3 {
+		break-after: avoid;
+	}
+}

@@ -1,0 +1,71 @@
+---
+interface Props {
+	tags: { slug: string; label: string; count?: number }[];
+}
+
+const { tags } = Astro.props;
+---
+
+{
+	tags.length > 0 && (
+		<ul class="tag-list">
+			{tags.map((tag) => (
+				<li>
+					<a class="tag" href={`/tags/${tag.slug}/`}>
+						#{tag.label}
+						{tag.count !== undefined && <span class="count">{tag.count}</span>}
+					</a>
+				</li>
+			))}
+		</ul>
+	)
+}
+
+<style is:global>
+	.tag-list {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		/* Rows far enough apart that the enlarged touch areas below don't overlap */
+		gap: 0.8em 0.5em;
+		margin: 0.5em 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.tag {
+		position: relative;
+		display: inline-block;
+		min-width: 44px;
+		padding: 0.25em 0.8em;
+		text-align: center;
+		font: inherit;
+		font-size: 0.85em;
+		line-height: 1.6;
+		color: rgb(var(--gray-dark));
+		background: rgb(var(--gray-light));
+		border: 1px solid transparent;
+		border-radius: 999px;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.tag:hover,
+	.tag:focus-visible {
+		color: var(--accent-text);
+		border-color: var(--accent-text);
+	}
+	.tag.active {
+		color: var(--on-accent);
+		background: var(--accent-text);
+		border-color: var(--accent-text);
+	}
+	/* Invisible extension of the touch area to 44px height (WCAG 2.5.5, AAA) */
+	.tag::after {
+		content: '';
+		position: absolute;
+		inset: -6px 0;
+	}
+	.tag .count {
+		margin-left: 0.4em;
+		font-weight: 400;
+	}
+</style>

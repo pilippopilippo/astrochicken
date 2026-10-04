@@ -1,0 +1,26 @@
+---
+import { SITE_TITLE } from '../consts';
+const today = new Date();
+---
+
+<footer lang="en">
+	Ⓐ {today.getFullYear()} {SITE_TITLE}. No rights reserved.
+	<span aria-hidden="true">·</span>
+	<a href="/rss.xml">RSS</a>
+</footer>
+<style>
+	footer {
+		padding: 1.5em 1em;
+		/* Same color as the page background, in both themes */
+		background: var(--bg);
+		color: rgb(var(--gray));
+		text-align: center;
+	}
+	footer a {
+		color: inherit;
+		text-underline-offset: 0.2em;
+	}
+	footer a:hover {
+		color: var(--accent-text);
+	}
+</style>

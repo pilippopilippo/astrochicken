@@ -1,0 +1,37 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import TagList from '../../components/TagList.astro';
+import { SITE_TITLE } from '../../consts';
+import { getPublishedPosts, getTags } from '../../utils/posts';
+
+const tags = getTags(await getPublishedPosts());
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Tags · ${SITE_TITLE}`} description="All the topics on the blog." />
+		<style>
+			main {
+				width: 720px;
+				text-align: center;
+			}
+			.empty {
+				color: rgb(var(--gray));
+			}
+			main :global(.tag-list) {
+				font-size: 1.15em;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main id="main">
+			<h1>Tags</h1>
+			{tags.length === 0 ? <p class="empty">No tags yet.</p> : <TagList tags={tags} />}
+		</main>
+		<Footer />
+	</body>
+</html>

@@ -1,0 +1,74 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import PostList from '../../components/PostList.astro';
+import { SITE_TITLE } from '../../consts';
+import { type Post, type Tag, getPublishedPosts, getTags, postTags } from '../../utils/posts';
+
+export async function getStaticPaths() {
+	const posts = await getPublishedPosts();
+	return getTags(posts).map((tag) => ({
+		params: { tag: tag.slug },
+		props: {
+			tag,
+			posts: posts.filter((post) => postTags(post).some((t) => t.slug === tag.slug)),
+		},
+	}));
+}
+
+interface Props {
+	tag: Tag;
+	posts: Post[];
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`#${tag.label} · ${SITE_TITLE}`}
+			description={`Posts tagged “${tag.label}”.`}
+		/>
+		<style>
+			main {
+				width: 960px;
+			}
+			.heading {
+				margin-bottom: 2rem;
+				text-align: center;
+			}
+			h1 {
+				margin: 0;
+			}
+			.heading p {
+				margin: 0.25em 0 0;
+				color: rgb(var(--gray));
+			}
+			/* Underlined so it reads as a link without relying on color alone */
+			.heading a {
+				color: rgb(var(--gray));
+				text-decoration: underline;
+				text-underline-offset: 0.2em;
+			}
+			.heading a:hover {
+				color: var(--accent-text);
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main id="main">
+			<div class="heading">
+				<h1>#{tag.label}</h1>
+				<p>
+					{tag.count} {tag.count === 1 ? 'post' : 'posts'} · <a href="/tags/">all tags</a>
+				</p>
+			</div>
+			<PostList posts={posts} />
+		</main>
+		<Footer />
+	</body>
+</html>

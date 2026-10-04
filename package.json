@@ -1,0 +1,46 @@
+{
+	"name": "astrochicken",
+	"version": "1.0.0",
+	"description": "A fast, accessible Astro blog template with dark mode, search and a writing panel that works from your phone.",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pilippopilippo/astrochicken.git"
+	},
+	"keywords": [
+		"astro",
+		"astro-theme",
+		"blog",
+		"template",
+		"cloudflare",
+		"sveltia-cms"
+	],
+	"dependencies": {
+		"@astrojs/cloudflare": "14.3.3",
+		"@astrojs/mdx": "8.0.2",
+		"@astrojs/rss": "4.0.19",
+		"@astrojs/sitemap": "3.7.4",
+		"astro": "7.3.5",
+		"typescript": "5.9.3"
+	},
+	"devDependencies": {
+		"@astrojs/check": "0.9.10",
+		"@sveltia/cms": "0.227.2",
+		"pagefind": "1.5.2",
+		"wrangler": "4.146.0"
+	},
+	"engines": {
+		"node": ">=22.12.0"
+	},
+	"private": true,
+	"scripts": {
+		"astro": "astro",
+		"build": "astro build && pagefind --site dist/client --force-language en",
+		"cf-typegen": "wrangler types",
+		"check": "astro check && npm run build && tsc && wrangler deploy --dry-run",
+		"deploy": "wrangler deploy",
+		"dev": "astro dev",
+		"preview": "npm run build && wrangler dev"
+	},
+	"type": "module"
+}

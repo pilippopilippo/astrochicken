@@ -1,0 +1,225 @@
+---
+import { Image } from 'astro:assets';
+import FormattedDate from './FormattedDate.astro';
+import TagList from './TagList.astro';
+import {
+	type Post,
+	coverTransitionName,
+	isOptimizableRemoteImage,
+	isRemoteImage,
+	postTags,
+	readingMinutes,
+} from '../utils/posts';
+
+interface Props {
+	posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+{posts.length === 0 && <p class="empty">No posts yet.</p>}
+<ul class="post-list">
+	{
+		posts.map((post, i) => {
+			const tags = postTags(post);
+			return (
+				<li>
+					<a href={`/blog/${post.id}/`}>
+						{post.data.heroImage &&
+							(isRemoteImage(post.data.heroImage) && !isOptimizableRemoteImage(post.data.heroImage) ? (
+								// A remote image from a host that isn't allowed is shown as it is
+								<img
+									src={post.data.heroImage}
+									width={i === 0 ? 960 : 720}
+									alt=""
+									loading={i === 0 ? 'eager' : 'lazy'}
+									fetchpriority={i === 0 ? 'high' : 'auto'}
+									decoding="async"
+									style={`view-transition-name: ${coverTransitionName(post.id)}`}
+								/>
+							) : (
+								// The first (featured) post is shown full width
+								<Image
+									width={i === 0 ? 960 : 720}
+									src={post.data.heroImage}
+									inferSize={isRemoteImage(post.data.heroImage) || undefined}
+									alt=""
+									loading={i === 0 ? 'eager' : 'lazy'}
+									fetchpriority={i === 0 ? 'high' : 'auto'}
+									style={`view-transition-name: ${coverTransitionName(post.id)}`}
+								/>
+							))}
+						<h2 class="title">{post.data.title}</h2>
+						<p class="date">
+							<FormattedDate date={post.data.pubDate} />
+							<span> · {readingMinutes(post)} min read</span>
+							{post.data.author && <span> · by {post.data.author}</span>}
+						</p>
+					</a>
+					<TagList tags={tags} />
+				</li>
+			);
+		})
+	}
+</ul>
+
+<script>
+	// Cards below the fold fade in as they scroll into view. Cards already visible on load,
+	// visitors without JavaScript see them immediately; with reduced motion they only fade.
+	// Skipped when coming back with the browser's Back button: the scroll position is restored
+	// and the cover image transitions back into its card, which must already be visible.
+	const cards = document.querySelectorAll<HTMLLIElement>('ul.post-list > li');
+	const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+	if (
+		'IntersectionObserver' in window &&
+		navigation?.type !== 'back_forward'
+	) {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('revealed');
+						observer.unobserve(entry.target);
+					}
+				}
+			},
+			{ rootMargin: '0px 0px -10% 0px' },
+		);
+		for (const card of cards) {
+			if (card.getBoundingClientRect().top > innerHeight) {
+				card.classList.add('reveal');
+				observer.observe(card);
+			}
+		}
+	}
+</script>
+
+<style>
+	ul li:global(.reveal) {
+		opacity: 0;
+		transform: translateY(1.5rem);
+		transition:
+			opacity 0.4s ease-out,
+			transform 0.4s ease-out;
+	}
+	ul li:global(.reveal.revealed) {
+		opacity: 1;
+		transform: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		ul li:global(.reveal) {
+			transform: none;
+		}
+	}
+	ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2rem;
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+	}
+	ul li {
+		width: calc(50% - 1rem);
+		position: relative;
+		/* Keeps the hover surface below the card content but above the page */
+		isolation: isolate;
+	}
+	/*
+	  Hover: Material Design-style elevation. Instead of a shadow (invisible on a dark
+	  background) a slightly lighter surface appears behind the card, in both themes.
+	  Drawn as a pseudo-element so it doesn't change the layout.
+	*/
+	ul li::before {
+		content: '';
+		position: absolute;
+		inset: -0.75rem;
+		z-index: -1;
+		border-radius: 18px;
+		background: var(--hover-surface);
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+	@media (hover: hover) {
+		ul li:hover::before {
+			opacity: 1;
+		}
+	}
+	ul li:focus-within::before {
+		opacity: 1;
+	}
+	ul li :global(.tag-list) {
+		justify-content: flex-start;
+	}
+	ul li[hidden] {
+		display: none;
+	}
+	ul li a {
+		display: block;
+		text-decoration: none;
+		transition: 0.2s ease;
+	}
+	ul li a * {
+		text-decoration: none;
+		transition: 0.2s ease;
+	}
+	/* The newest post is featured full width */
+	ul li:first-child {
+		width: 100%;
+		margin-bottom: 1rem;
+		text-align: center;
+	}
+	ul li:first-child :global(.tag-list) {
+		justify-content: center;
+	}
+	ul li:first-child img {
+		width: 100%;
+	}
+	ul li:first-child .title {
+		font-size: 1.953em;
+	}
+	ul li img {
+		margin-bottom: 0.5rem;
+		border-radius: 12px;
+	}
+	/* h2 for a correct heading outline (page h1 > post titles), sized like the old h4 */
+	.title {
+		margin: 0;
+		font-size: 1.25em;
+		color: rgb(var(--black));
+		line-height: 1.2;
+	}
+	.date {
+		margin: 0;
+		color: rgb(var(--gray));
+	}
+	ul li a:hover .title {
+		color: var(--accent-text);
+	}
+	.empty {
+		text-align: center;
+		color: rgb(var(--gray));
+	}
+	@media (max-width: 720px) {
+		ul {
+			gap: 2em;
+		}
+		ul li {
+			width: 100%;
+			text-align: center;
+		}
+		ul li :global(.tag-list) {
+			justify-content: center;
+		}
+		ul li:first-child {
+			margin-bottom: 0;
+		}
+		.title {
+			font-size: 1.15em;
+		}
+		ul li:first-child .title {
+			font-size: 1.4em;
+		}
+	}
+</style>

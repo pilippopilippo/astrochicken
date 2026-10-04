@@ -1,0 +1,148 @@
+# Settings of the writing panel at /admin/ (Sveltia CMS, https://github.com/sveltia/sveltia-cms).
+# The fields mirror the post schema in src/content.config.ts: keep the two in sync.
+# The GitHub repository, site name and address come from site.config.mjs (see src/pages/admin/index.astro).
+
+logo:
+  src: /favicon.svg
+
+# Shared images ("Global Assets" in the image picker). Posts keep their own images in their folder
+# (see the collection below); this folder is for images used by several posts. The "@assets" alias
+# (tsconfig.json) lets Astro find and optimize them, as a "/images/..." path in public/ would not be
+media_folder: src/assets/images
+public_folder: "@assets/images"
+
+media_libraries:
+  default:
+    config:
+      # Photos straight from the phone (including iPhone HEIC) are shrunk and converted to WebP in the
+      # browser before being uploaded: smaller repository, and the location data in the photo is removed
+      transformations:
+        raster_image:
+          format: webp
+          quality: 85
+          width: 2560
+          height: 2560
+      # "IMG 1234.HEIC" becomes "img-1234.webp"
+      slugify_filename: true
+  # Free stock photos, saved as links: the site downloads and optimizes them when it's built, from
+  # the hosts listed in src/utils/remote-images.mjs. Pixabay and Picsum are left out:
+  # Pixabay links expire after a day, which would break later builds
+  stock_assets:
+    providers: [unsplash, pexels]
+
+# Addresses and file names: lowercase, no accents, hyphens instead of spaces
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+  maxlength: 80
+
+output:
+  # An empty optional field (author, cover, update date...) is left out of the file instead of being
+  # written as an empty value, which the post schema would reject
+  omit_empty_optional_fields: true
+
+collections:
+  - name: blog
+    label: Posts
+    label_singular: Post
+    description: Each post is a folder with its text and its images.
+    folder: src/content/blog
+    # One folder per post: src/content/blog/<slug>/index.md, with its images next to it
+    path: "{{slug}}/index"
+    media_folder: ""
+    public_folder: ""
+    extension: md
+    format: frontmatter
+    create: true
+    slug:
+      template: "{{title}}"
+      # The folder name is the post address: it can be chosen when the post is created, not changed
+      # later (it would break links to the post)
+      editable: [create]
+      hint: The post address, e.g. /blog/my-first-trip/. It can't be changed after the first save.
+      pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', "Lowercase letters, numbers and hyphens only (e.g. my-first-trip)."]
+    preview_path: "blog/{{slug}}/"
+    summary: "{{title}}"
+    sortable_fields:
+      fields: [pubDate, title, author]
+      default:
+        field: pubDate
+        direction: descending
+    view_filters:
+      - label: Drafts
+        field: draft
+        pattern: true
+    fields:
+      - label: Title
+        name: title
+        widget: string
+      - label: Description
+        name: description
+        widget: string
+        hint: A short summary, shown by search engines and in link previews.
+      - label: Publication date
+        name: pubDate
+        widget: datetime
+        type: date
+        format: YYYY-MM-DD
+        default: "{{now}}"
+      - label: Update date
+        name: updatedDate
+        widget: datetime
+        type: date
+        format: YYYY-MM-DD
+        required: false
+        hint: Only if you change the post after publishing it.
+      - label: Author
+        name: author
+        widget: string
+        required: false
+        hint: Leave empty to show no name.
+      - label: Cover image
+        name: heroImage
+        widget: image
+        required: false
+        choose_url: false
+        hint: Shown on the home page, at the top of the post and in link previews.
+      - label: Tags
+        name: tags
+        widget: list
+        required: false
+        hint: Topics of the post, one per box (e.g. travel).
+      - label: Language
+        name: lang
+        widget: select
+        options:
+          - { label: English, value: en }
+          - { label: Deutsch, value: de }
+          - { label: Español, value: es }
+          - { label: Français, value: fr }
+          - { label: Italiano, value: it }
+          - { label: Português, value: pt }
+        default: en
+        hint: Lets screen readers pronounce the text correctly. Add more languages in public/admin/config.yml.
+      - label: Draft
+        name: draft
+        widget: boolean
+        default: false
+        required: false
+        hint: Turn on to save the post without publishing it; turn off when it's ready.
+      - label: Body
+        name: body
+        widget: markdown
+        # The title is already the page heading (h1): sections start from h2
+        buttons:
+          - bold
+          - italic
+          - strikethrough
+          - code
+          - link
+          - heading-two
+          - heading-three
+          - heading-four
+          - quote
+          - bulleted-list
+          - numbered-list
+        editor_components: [image, code-block]
+        linked_images: false

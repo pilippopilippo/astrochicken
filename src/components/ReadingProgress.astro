@@ -1,0 +1,57 @@
+---
+// Thin accent-colored bar at the top of the page that fills up while reading an article.
+// Uses a CSS scroll-driven animation where supported, with a small JavaScript fallback.
+---
+
+<div class="reading-progress" aria-hidden="true"></div>
+
+<script>
+	const bar = document.querySelector<HTMLElement>('.reading-progress');
+	if (bar && !CSS.supports('animation-timeline: scroll()')) {
+		let queued = false;
+		const update = () => {
+			queued = false;
+			const max = document.documentElement.scrollHeight - innerHeight;
+			bar.style.transform = `scaleX(${max > 0 ? Math.min(scrollY / max, 1) : 0})`;
+		};
+		addEventListener(
+			'scroll',
+			() => {
+				if (!queued) {
+					queued = true;
+					requestAnimationFrame(update);
+				}
+			},
+			{ passive: true },
+		);
+		addEventListener('resize', update);
+		update();
+	}
+</script>
+
+<style>
+	.reading-progress {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 20;
+		height: 3px;
+		background: var(--accent);
+		transform: scaleX(0);
+		transform-origin: left;
+		pointer-events: none;
+		view-transition-name: reading-progress;
+	}
+	@supports (animation-timeline: scroll()) {
+		.reading-progress {
+			animation: reading-progress linear both;
+			animation-timeline: scroll(root);
+		}
+	}
+	@keyframes reading-progress {
+		to {
+			transform: scaleX(1);
+		}
+	}
+</style>

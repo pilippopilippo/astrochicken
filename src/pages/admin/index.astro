@@ -1,0 +1,53 @@
+---
+// Writing panel (Sveltia CMS, https://github.com/sveltia/sveltia-cms) at /admin/: it signs in to
+// GitHub and saves posts as commits to the repository, so the site is rebuilt and published like
+// after any other change. Fields and image handling are set in public/admin/config.yml; the
+// repository and site details come from site.config.mjs and are added here.
+//
+// The CMS is installed with npm at a pinned version (see package.json) and served from this site
+// instead of a CDN: the page always runs the exact code that was tested.
+import sveltiaCms from "../../../node_modules/@sveltia/cms/dist/sveltia-cms.js?url";
+import { GITHUB_BRANCH, GITHUB_REPO, SITE_TITLE } from "../../consts";
+
+const config = {
+	backend: {
+		name: "github",
+		repo: GITHUB_REPO,
+		branch: GITHUB_BRANCH,
+		// Sign in with a GitHub personal access token (see the README): the "Sign in with GitHub"
+		// button would need a separate OAuth server
+		auth_methods: ["token"],
+		commit_messages: {
+			create: "New post: {{slug}}",
+			update: "Update post: {{slug}}",
+			delete: "Delete post: {{slug}}",
+			uploadMedia: "Upload {{path}}",
+			deleteMedia: "Delete {{path}}",
+		},
+	},
+	app_title: SITE_TITLE,
+	site_url: Astro.site?.origin,
+};
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{`${SITE_TITLE} · Admin`}</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link href="/admin/config.yml" type="application/yaml" rel="cms-config-url" />
+	</head>
+	<body>
+		<script is:inline>
+			window.CMS_MANUAL_INIT = true;
+		</script>
+		<script is:inline src={sveltiaCms}></script>
+		<script is:inline define:vars={{ config }}>
+			window.CMS.init({ config });
+		</script>
+	</body>
+</html>

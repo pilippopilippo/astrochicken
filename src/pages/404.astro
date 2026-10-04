@@ -1,0 +1,37 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Page not found · ${SITE_TITLE}`} description="This page doesn't exist." />
+		<meta name="robots" content="noindex" />
+		<style>
+			main {
+				text-align: center;
+			}
+			.emoji {
+				margin: 0;
+				font-size: 4em;
+				line-height: 1;
+			}
+			p {
+				color: rgb(var(--gray));
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main id="main">
+			<p class="emoji" aria-hidden="true">🍗</p>
+			<h1>Page not found</h1>
+			<p>The page you're looking for doesn't exist or has been moved.</p>
+			<p><a href="/">← Back to the blog</a></p>
+		</main>
+		<Footer />
+	</body>
+</html>

@@ -1,0 +1,251 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import PostEnhancements from '../components/PostEnhancements.astro';
+import ReadingProgress from '../components/ReadingProgress.astro';
+import TagList from '../components/TagList.astro';
+import { coverTransitionName, isOptimizableRemoteImage, isRemoteImage, tagSlug } from '../utils/posts';
+import { SITE_DESCRIPTION } from '../consts';
+
+type PostData = CollectionEntry<'blog'>['data'];
+// Date and description are optional so standalone pages (e.g. About) can use this layout too
+type Props = Omit<PostData, 'draft' | 'pubDate' | 'description' | 'tags' | 'lang'> &
+	Partial<Pick<PostData, 'pubDate' | 'description' | 'tags' | 'lang'>> & {
+		/** Post id, used to link the cover image to its card on the home page */
+		postId?: string;
+		/** Estimated reading time in minutes */
+		readingTime?: number;
+		/** Links to the neighbouring posts, shown at the end of the article */
+		newer?: { title: string; url: string };
+		older?: { title: string; url: string };
+	};
+
+const {
+	title,
+	description = SITE_DESCRIPTION,
+	pubDate,
+	updatedDate,
+	heroImage,
+	tags = [],
+	author,
+	postId,
+	lang = 'en',
+	readingTime,
+	newer,
+	older,
+} = Astro.props;
+// Search index (Pagefind): only articles are indexed, with their date for the results
+const searchDate = pubDate?.toLocaleDateString('en-us', { year: 'numeric', month: 'short', day: 'numeric' });
+const tagLinks = [...new Map(tags.map((label) => [tagSlug(label), label])).entries()]
+	.filter(([slug]) => slug)
+	.map(([slug, label]) => ({ slug, label }));
+---
+
+<html lang={lang}>
+	<head>
+		<BaseHead
+			title={title}
+			description={description}
+			image={heroImage}
+			author={author}
+			publishedTime={postId ? pubDate : undefined}
+			modifiedTime={postId ? updatedDate : undefined}
+			tags={postId ? tags : undefined}
+			lang={lang}
+		/>
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+			}
+			.hero-image {
+				width: 100%;
+			}
+			.hero-image img {
+				display: block;
+				margin: 0 auto;
+				border-radius: 12px;
+				box-shadow: var(--box-shadow);
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.title {
+				margin-bottom: 1em;
+				padding: 1em 0;
+				text-align: center;
+				line-height: 1;
+			}
+			.title h1 {
+				margin: 0 0 0.5em 0;
+				line-height: 1.15;
+			}
+			/*
+			  Comfortable line length: text stops at 36rem / 576px (about 72-75 characters per line,
+			  within the recommended 50-75); images keep the full column width (720px).
+			*/
+			.prose > :global(*:not(.title, p:has(> img))) {
+				/* rem, not em: headings have a larger font-size and would get a wider measure */
+				max-width: 36rem;
+				/* Include list indentation in the width so lists line up with paragraphs */
+				box-sizing: border-box;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			@media (max-width: 720px) {
+				/* Smaller side margins on phones: ~18px instead of ~36px */
+				.prose {
+					max-width: 100%;
+					padding: 1em 0;
+				}
+			}
+			.title :global(.tag-list) {
+				margin-bottom: 1em;
+			}
+			.date {
+				margin-bottom: 0.5em;
+				color: rgb(var(--gray));
+			}
+			/* Previous / next post at the end of the article */
+			.post-nav {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 1rem;
+				max-width: 36rem;
+				margin: 3rem auto 0;
+				padding: 1.5rem 0 0;
+				border-top: 1px solid rgb(var(--gray-light));
+			}
+			.post-nav a {
+				display: flex;
+				flex-direction: column;
+				gap: 0.15em;
+				padding: 0.75rem 1rem;
+				text-decoration: none;
+				border-radius: 12px;
+				transition: background-color 0.2s ease;
+			}
+			.post-nav a:hover {
+				background: var(--hover-surface);
+			}
+			.post-nav .newer {
+				grid-column: 2;
+				text-align: right;
+			}
+			.post-nav-label {
+				font-size: 0.8em;
+				color: rgb(var(--gray));
+			}
+			.post-nav-title {
+				font-weight: 700;
+				line-height: 1.3;
+				color: rgb(var(--black));
+			}
+			.post-nav a:hover .post-nav-title {
+				color: var(--accent-text);
+			}
+			@media (max-width: 720px) {
+				.post-nav {
+					grid-template-columns: 1fr;
+					gap: 0.25rem;
+				}
+				.post-nav .newer {
+					grid-column: 1;
+				}
+			}
+			.last-updated-on {
+				font-style: italic;
+			}
+		</style>
+	</head>
+
+	<body>
+		{postId && <ReadingProgress />}
+		<Header />
+		<main id="main">
+			<article
+				data-pagefind-body={postId ? '' : undefined}
+				data-pagefind-meta={postId && searchDate ? `date:${searchDate}` : undefined}
+			>
+				<div class="hero-image">
+					{
+						heroImage &&
+							(isRemoteImage(heroImage) && !isOptimizableRemoteImage(heroImage) ? (
+								// A remote image from a host that isn't allowed is shown as it is
+								<img
+									src={heroImage}
+									width={1020}
+									alt=""
+									loading="eager"
+									fetchpriority="high"
+									decoding="async"
+									style={postId ? `view-transition-name: ${coverTransitionName(postId)}` : undefined}
+								/>
+							) : (
+								<Image
+									width={1020}
+									src={heroImage}
+									inferSize={isRemoteImage(heroImage) || undefined}
+									alt=""
+									loading="eager"
+									fetchpriority="high"
+									style={postId ? `view-transition-name: ${coverTransitionName(postId)}` : undefined}
+								/>
+							))
+					}
+				</div>
+				<div class="prose">
+					<div class="title">
+						{
+							pubDate && (
+								<div class="date" lang="en" data-pagefind-ignore>
+									<FormattedDate date={pubDate} />
+									{readingTime && <span> · {readingTime} min read</span>}
+									{author && <span class="author"> · by {author}</span>}
+									{updatedDate && (
+										<div class="last-updated-on">
+											Last updated on <FormattedDate date={updatedDate} />
+										</div>
+									)}
+								</div>
+							)
+						}
+						<h1>{title}</h1>
+						<TagList tags={tagLinks} />
+						<hr />
+					</div>
+					<slot />
+				</div>
+				{
+					(newer || older) && (
+						<nav class="post-nav" aria-label="More posts" lang="en" data-pagefind-ignore>
+							{older && (
+								<a class="older" href={older.url} rel="prev">
+									<span class="post-nav-label">← Previous post</span>
+									<span class="post-nav-title">{older.title}</span>
+								</a>
+							)}
+							{newer && (
+								<a class="newer" href={newer.url} rel="next">
+									<span class="post-nav-label">Next post →</span>
+									<span class="post-nav-title">{newer.title}</span>
+								</a>
+							)}
+						</nav>
+					)
+				}
+			</article>
+		</main>
+		<Footer />
+		<PostEnhancements />
+	</body>
+</html>
