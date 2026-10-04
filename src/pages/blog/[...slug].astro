@@ -1,34 +1,39 @@
 ---
 import { render } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
-import { type Post, getPublishedPosts, readingMinutes } from '../../utils/posts';
+import { type Post, getPublishedPosts, readingMinutes, relatedPosts } from '../../utils/posts';
 
 export async function getStaticPaths() {
 	const posts = await getPublishedPosts();
 	// Posts are sorted newest first: the previous item is newer, the next one older
-	return posts.map((post, i) => ({
-		params: { slug: post.id },
-		props: { post, newer: posts[i - 1], older: posts[i + 1] },
-	}));
+	return posts.map((post, i) => {
+		const newer = posts[i - 1];
+		const older = posts[i + 1];
+		const related = relatedPosts(post, posts, [newer, older].filter((p): p is Post => !!p));
+		return { params: { slug: post.id }, props: { post, newer, older, related } };
+	});
 }
 
 interface Props {
 	post: Post;
 	newer?: Post;
 	older?: Post;
+	related: Post[];
 }
 
-const { post, newer, older } = Astro.props;
-const { Content } = await render(post);
-const link = (p?: Post) => p && { title: p.data.title, url: `/blog/${p.id}/` };
+const { post, newer, older, related } = Astro.props;
+const { Content, headings } = await render(post);
+const link = (p?: Post) => p && { title: p.data.title, url: `/blog/${p.id}/`, lang: p.data.lang };
 ---
 
 <BlogPost
 	{...post.data}
 	postId={post.id}
 	readingTime={readingMinutes(post)}
+	headings={headings}
 	newer={link(newer)}
 	older={link(older)}
+	related={related.map((p) => ({ ...link(p)!, date: p.data.pubDate }))}
 >
 	<Content />
 </BlogPost>

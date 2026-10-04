@@ -4,7 +4,7 @@
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
-import { SITE_TITLE } from '../consts';
+import { CLOUDFLARE_ANALYTICS_TOKEN, SITE_TITLE } from '../consts';
 
 interface Props {
 	title: string;
@@ -26,7 +26,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const {
 	title,
 	description,
-	image = '/social-default.jpg',
+	image,
 	author,
 	publishedTime,
 	modifiedTime,
@@ -35,13 +35,17 @@ const {
 } = Astro.props;
 
 // Social previews: cover images are cropped to the recommended 1200x630 and saved as JPG,
-// which every platform (Facebook, WhatsApp, X, Telegram...) can display
+// which every platform (Facebook, WhatsApp, X, Telegram...) can display. A page without a cover
+// gets an image with its title, generated after the build (see src/og/og-images.mjs)
+const generatedImage = `/og${Astro.url.pathname.replace(/\/$/, '') || '/index'}.png`;
 const socialImage =
-	typeof image === 'string'
-		? { src: image, width: undefined, height: undefined }
-		: await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' }).then(
-				(img) => ({ src: img.src, width: 1200, height: 630 }),
-			);
+	image === undefined
+		? { src: generatedImage, width: 1200, height: 630 }
+		: typeof image === 'string'
+			? { src: image, width: undefined, height: undefined }
+			: await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' }).then(
+					(img) => ({ src: img.src, width: 1200, height: 630 }),
+				);
 const socialImageURL = new URL(socialImage.src, Astro.url);
 const locale = { it: 'it_IT', en: 'en_US' }[lang] ?? lang;
 
@@ -165,3 +169,15 @@ const structuredData = publishedTime
 
 <!-- Structured data -->
 <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+<!-- Visit statistics (Cloudflare Web Analytics: no cookies, no personal data), when a token is set -->
+{
+	CLOUDFLARE_ANALYTICS_TOKEN && (
+		<script
+			is:inline
+			defer
+			src="https://static.cloudflareinsights.com/beacon.min.js"
+			data-cf-beacon={JSON.stringify({ token: CLOUDFLARE_ANALYTICS_TOKEN })}
+		/>
+	)
+}

@@ -7,12 +7,14 @@ A fast, accessible blog template for [Astro](https://astro.build), ready to depl
 - Readable by design: Atkinson Hyperlegible font, comfortable line length, WCAG AAA contrast
 - Light and dark themes (follows the device, with a switch)
 - Full-text search with [Pagefind](https://pagefind.app), no external service
-- Tags, reading time, previous/next links, RSS feed
+- Tags, reading time, table of contents, related posts, previous/next links, RSS feed
 - Images optimized at build time, full-screen view on click
 - Code highlighting with a Copy button
 - Page transitions that respect reduced motion
 - Writing panel at `/admin/` ([Sveltia CMS](https://github.com/sveltia/sveltia-cms))
-- Sitemap, social previews and structured data
+- Sitemap, structured data and social previews (an image with the title is generated for pages without a cover)
+- Optional visit statistics with Cloudflare Web Analytics (no cookies)
+- Dependabot updates, checked by a GitHub Actions workflow before you merge them
 
 ## Quick start
 
@@ -22,7 +24,7 @@ npm create astro@latest -- --template pilippopilippo/astrochicken
 
 Or click **Use this template** on GitHub. Then:
 
-1. Edit `site.config.mjs`: name, description, address and GitHub repository.
+1. Edit `site.config.mjs`: name, description, address, GitHub repository and, optionally, the Cloudflare Web Analytics token.
 2. Delete the sample posts in `src/content/blog/` and edit `src/pages/about.astro`.
 3. Deploy (see below).
 

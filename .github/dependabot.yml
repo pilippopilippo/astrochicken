@@ -1,0 +1,17 @@
+# Weekly pull requests that update the dependencies; the "Check" workflow builds each one before
+# you merge it
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Minor and patch updates together in one pull request; major updates one by one
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

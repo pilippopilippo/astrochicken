@@ -18,12 +18,13 @@ Astrochicken is a blog template for [Astro](https://astro.build). It's built to 
 - **Readable by design**: [Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/) font, a comfortable line length and contrast that meets WCAG AAA.
 - **Light and dark themes** that follow the device, with a switch in the header.
 - **Search** across every post, with `Ctrl+K`, `⌘K` or `/`. No external service: the index is built with the site.
-- **Tags**, reading time, previous and next post links, and an RSS feed.
+- **Tags**, reading time, a table of contents for long posts, related posts, and an RSS feed.
 - **Images** optimized at build time, opening full screen on click.
 - **Code blocks** with highlighting and a Copy button.
 - **Smooth page transitions** that respect the reduced motion setting.
 - **A writing panel** at `/admin/`, which also works on a phone (see below).
-- **SEO**: sitemap, social previews and structured data for search engines.
+- **SEO**: sitemap, structured data and social previews, with an image generated for pages without a cover.
+- **Visit statistics** (optional) with Cloudflare Web Analytics: no cookies, no banner.
 
 ## Writing a post
 

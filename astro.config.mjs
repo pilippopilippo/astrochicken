@@ -5,6 +5,7 @@ import sitemap from "@astrojs/sitemap";
 
 import cloudflare from "@astrojs/cloudflare";
 import config from "./site.config.mjs";
+import ogImages from "./src/og/og-images.mjs";
 
 // Remind whoever starts from the template to fill in site.config.mjs
 if (config.url === "https://example.com") {
@@ -30,6 +31,8 @@ export default defineConfig({
 		mdx(),
 		// The writing panel (/admin/) isn't a page for readers
 		sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/admin/") }),
+		// Social preview images for the pages without a cover
+		ogImages(),
 	],
 	markdown: {
 		// GitHub's high-contrast dark theme: every syntax color is at least 7:1 on the code background (WCAG AAA)

@@ -10,4 +10,7 @@ export default {
 	github: { repo: "your-name/your-blog", branch: "main" },
 	// Footer text, after "Ⓐ <year> <title>." (e.g. "All rights reserved.")
 	footer: "No rights reserved.",
+	// Visit statistics with Cloudflare Web Analytics (free, no cookies): paste the token of the site
+	// from Cloudflare → Web Analytics → Add a site → JS snippet. Leave empty to turn them off
+	cloudflareAnalyticsToken: "",
 };

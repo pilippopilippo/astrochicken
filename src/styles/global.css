@@ -165,7 +165,7 @@ a:hover {
   Links inside articles: a thin, faint underline is always visible (links must not rely on
   color alone), and on hover a full underline draws from left to right.
 */
-.prose a:not(.tag, .heading-anchor) {
+.prose a:not(.tag, .heading-anchor, .toc-link) {
 	text-decoration: none;
 	background-image:
 		linear-gradient(currentColor, currentColor),
@@ -180,8 +180,8 @@ a:hover {
 	padding-bottom: 1px;
 	transition: background-size 0.25s ease-out;
 }
-.prose a:not(.tag, .heading-anchor):hover,
-.prose a:not(.tag, .heading-anchor):focus-visible {
+.prose a:not(.tag, .heading-anchor, .toc-link):hover,
+.prose a:not(.tag, .heading-anchor, .toc-link):focus-visible {
 	background-size:
 		100% 2px,
 		100% 1px;

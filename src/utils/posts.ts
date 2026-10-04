@@ -73,3 +73,20 @@ export function getTags(posts: Post[]): Tag[] {
 	}
 	return [...tags.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 }
+
+/**
+ * Up to `limit` posts that share tags with `post`, the most tags in common first, then the newest.
+ * Posts listed in `exclude` (e.g. the previous and next ones, already linked) are left out.
+ */
+export function relatedPosts(post: Post, posts: Post[], exclude: Post[] = [], limit = 3): Post[] {
+	const tags = new Set(postTags(post).map(({ slug }) => slug));
+	if (!tags.size) return [];
+	const skip = new Set([post.id, ...exclude.map(({ id }) => id)]);
+	return posts
+		.filter(({ id }) => !skip.has(id))
+		.map((other) => ({ other, shared: postTags(other).filter(({ slug }) => tags.has(slug)).length }))
+		.filter(({ shared }) => shared > 0)
+		.sort((a, b) => b.shared - a.shared || b.other.data.pubDate.valueOf() - a.other.data.pubDate.valueOf())
+		.slice(0, limit)
+		.map(({ other }) => other);
+}
