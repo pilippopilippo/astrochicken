@@ -6,13 +6,16 @@ import sitemap from "@astrojs/sitemap";
 import cloudflare from "@astrojs/cloudflare";
 import config from "./site.config.mjs";
 import ogImages from "./src/og/og-images.mjs";
+import demoContent from "./src/demo/demo-content.mjs";
 
 // Remind whoever starts from the template to fill in site.config.mjs
 if (config.url === "https://example.com") {
 	console.warn("[astrochicken] Set your blog's address (url) in site.config.mjs");
 }
-if (config.github.repo === "your-name/your-blog") {
-	console.warn("[astrochicken] Set your GitHub repository (github.repo) in site.config.mjs for the writing panel");
+// Until it's set, the writing panel runs in demo mode (see src/demo/demo-content.mjs)
+const demo = config.github.repo === "your-name/your-blog";
+if (demo) {
+	console.warn("[astrochicken] Set your GitHub repository (github.repo) in site.config.mjs: the writing panel is in demo mode");
 }
 
 // https://astro.build/config
@@ -33,6 +36,8 @@ export default defineConfig({
 		sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/admin/") }),
 		// Social preview images for the pages without a cover
 		ogImages(),
+		// Sample posts for the writing panel's demo mode
+		demoContent({ enabled: demo }),
 	],
 	markdown: {
 		// GitHub's high-contrast dark theme: every syntax color is at least 7:1 on the code background (WCAG AAA)

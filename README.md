@@ -2,6 +2,19 @@
 
 A fast, accessible blog template for [Astro](https://astro.build), ready to deploy on Cloudflare, with a writing panel that works from your phone.
 
+**[Live demo](https://astrochicken-demo.eightvalley.workers.dev/)** · [Try the writing panel](https://astrochicken-demo.eightvalley.workers.dev/admin/) (demo mode: changes stay in your browser)
+
+[![Check](https://github.com/pilippopilippo/astrochicken/actions/workflows/check.yml/badge.svg)](https://github.com/pilippopilippo/astrochicken/actions/workflows/check.yml)
+![Lighthouse 100](https://img.shields.io/badge/Lighthouse-100-0a7d32)
+![WCAG AAA](https://img.shields.io/badge/WCAG-AAA-0a7d32)
+![Astro 7](https://img.shields.io/badge/Astro-7-8b380e)
+[![License: MIT](https://img.shields.io/badge/license-MIT-52524f)](LICENSE)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshot-dark.webp">
+  <img alt="Astrochicken on a desktop and on a phone: the home page with large post covers, a post with its table of contents" src=".github/assets/screenshot-light.webp">
+</picture>
+
 ## Features
 
 - Readable by design: Atkinson Hyperlegible font, comfortable line length, WCAG AAA contrast
@@ -70,6 +83,8 @@ Sign in with a GitHub fine-grained token:
 4. Paste the token in the panel.
 
 The panel's fields are set in `public/admin/config.yml`; keep them in sync with `src/content.config.ts`.
+
+Until `github.repo` is set in `site.config.mjs`, the panel runs in **demo mode**: it works on a test repository in the visitor's browser, filled with the sample posts, and saves nothing anywhere else. That's how the live demo works.
 
 ## Deploy
 

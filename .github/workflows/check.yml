@@ -1,9 +1,11 @@
 # Type checks, build and deploy dry run on every pull request (e.g. the dependency updates opened by
-# Dependabot), so a change that breaks the site is caught before it reaches main
+# Dependabot), so a change that breaks the site is caught before it reaches main; and on main itself
 name: Check
 
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

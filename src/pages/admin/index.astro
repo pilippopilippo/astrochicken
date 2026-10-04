@@ -7,9 +7,17 @@
 // The CMS is installed with npm at a pinned version (see package.json) and served from this site
 // instead of a CDN: the page always runs the exact code that was tested.
 import sveltiaCms from "../../../node_modules/@sveltia/cms/dist/sveltia-cms.js?url";
-import { GITHUB_BRANCH, GITHUB_REPO, SITE_TITLE } from "../../consts";
+import { GITHUB_BRANCH, GITHUB_REPO, PANEL_DEMO, SITE_TITLE } from "../../consts";
 
-const config = {
+// Demo mode (repository not set yet in site.config.mjs): a test repository in the visitor's browser,
+// filled with the sample posts on the first visit. Nothing is saved anywhere else
+const demoConfig = {
+	backend: { name: "test-repo" },
+	app_title: `${SITE_TITLE} demo`,
+	site_url: Astro.site?.origin,
+};
+
+const githubConfig = {
 	backend: {
 		name: "github",
 		repo: GITHUB_REPO,
@@ -28,6 +36,8 @@ const config = {
 	app_title: SITE_TITLE,
 	site_url: Astro.site?.origin,
 };
+
+const config = PANEL_DEMO ? demoConfig : githubConfig;
 ---
 
 <!doctype html>
@@ -40,14 +50,57 @@ const config = {
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<link href="/admin/config.yml" type="application/yaml" rel="cms-config-url" />
+		<style>
+			.demo-loading {
+				margin: 40vh 1rem 0;
+				font: 1.125rem/1.5 system-ui, sans-serif;
+				text-align: center;
+				color: #52524f;
+			}
+		</style>
 	</head>
 	<body>
+		<!-- The CMS is mounted here; the message is shown while the demo posts are loaded -->
+		<div id="nc-root">
+			{PANEL_DEMO && <p class="demo-loading">Loading the demo…</p>}
+		</div>
 		<script is:inline>
 			window.CMS_MANUAL_INIT = true;
 		</script>
 		<script is:inline src={sveltiaCms}></script>
-		<script is:inline define:vars={{ config }}>
-			window.CMS.init({ config });
+		<script is:inline define:vars={{ config, demo: PANEL_DEMO }}>
+			// In demo mode, copy the sample posts into the test repository (the "sveltia-cms-test" folder
+			// of the browser's private storage) the first time, then start the CMS
+			const loadDemoPosts = async () => {
+				const root = await navigator.storage.getDirectory();
+				const repo = await root.getDirectoryHandle("sveltia-cms-test", { create: true });
+				// Already filled: keep the visitor's changes. The marker is written last, so an interrupted
+				// first load is done again
+				const marker = ".demo-loaded";
+				try {
+					await repo.getFileHandle(marker);
+					return;
+				} catch {}
+				const paths = await (await fetch("/admin/demo/files.json")).json();
+				for (const path of paths) {
+					const response = await fetch(`/admin/demo/${path.split("/").map(encodeURIComponent).join("/")}`);
+					if (!response.ok) continue;
+					const parts = path.split("/");
+					const name = parts.pop();
+					let folder = repo;
+					for (const part of parts) folder = await folder.getDirectoryHandle(part, { create: true });
+					const writable = await (await folder.getFileHandle(name, { create: true })).createWritable();
+					await writable.write(await response.arrayBuffer());
+					await writable.close();
+				}
+				await repo.getFileHandle(marker, { create: true });
+			};
+			(demo ? loadDemoPosts().catch((error) => console.warn("Demo posts not loaded:", error)) : Promise.resolve()).then(
+				() => {
+					document.querySelector(".demo-loading")?.remove();
+					window.CMS.init({ config });
+				},
+			);
 		</script>
 	</body>
 </html>
