@@ -81,8 +81,12 @@ const fitTitle = (font, text, maxLines) => {
 	return { size, lines };
 };
 
-const path = (font, text, x, y, size, color) =>
-	`<path fill="${color}" d="${font.getPath(text, x, y, size).toPathData(2)}"/>`;
+const path = (font, text, x, y, size, color) => {
+	const data = font.getPath(text, x, y, size).toPathData(2);
+	// A font library bug would otherwise produce broken images without any error
+	if (/NaN|Infinity|undefined/.test(data)) throw new Error(`[og-images] Could not draw the text "${text}"`);
+	return `<path fill="${color}" d="${data}"/>`;
+};
 
 const render = ({ bold, regular, icon, title, subtitle, site, host }) => {
 	const heading = fitTitle(bold, drawable(bold, title), subtitle ? 2 : 3);

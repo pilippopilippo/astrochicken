@@ -11,6 +11,13 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     open-pull-requests-limit: 5
+    ignore:
+      # opentype.js 2.x draws some letters wrong in the social preview images: stay on 1.x
+      - dependency-name: opentype.js
+        versions: [">=2"]
+      # Astro's type checking (astro check) doesn't support TypeScript 7 yet
+      - dependency-name: typescript
+        versions: [">=7"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
