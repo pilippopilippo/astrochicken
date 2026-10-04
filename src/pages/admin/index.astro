@@ -64,8 +64,19 @@ const config = PANEL_DEMO ? demoConfig : githubConfig;
 		<div id="nc-root">
 			{PANEL_DEMO && <p class="demo-loading">Loading the demo…</p>}
 		</div>
-		<script is:inline>
+		<script is:inline define:vars={{ demo: PANEL_DEMO }}>
 			window.CMS_MANUAL_INIT = true;
+			// The demo site is in English: show the panel in English too, unless the visitor has already
+			// picked a language in the panel's settings (by default it follows the browser's language).
+			// Set before the CMS script runs, as it reads the language as soon as it's loaded
+			if (demo) {
+				try {
+					const prefs = JSON.parse(localStorage.getItem("sveltia-cms.prefs") || "{}");
+					if (!prefs.locale || prefs.locale === "auto") {
+						localStorage.setItem("sveltia-cms.prefs", JSON.stringify({ ...prefs, locale: "en-US" }));
+					}
+				} catch {}
+			}
 		</script>
 		<script is:inline src={sveltiaCms}></script>
 		<script is:inline define:vars={{ config, demo: PANEL_DEMO }}>
