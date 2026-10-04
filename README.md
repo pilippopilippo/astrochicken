@@ -58,11 +58,11 @@ Name the file `index.mdx` to use components. The sample posts show everything in
 
 ## Writing panel
 
-Open `/admin/` on your site to write and edit posts from any browser, phone included. Photos are resized, converted to WebP and stripped of location data before upload. Each save is a commit to your repository, which triggers a new deploy.
+Open `/admin/` on your site to write and edit posts from any browser, phone included. Photos are resized, converted to WebP and stripped of location data before upload; free stock photos (Unsplash, Pexels) are saved as links. Each save is a commit to your repository, which triggers a new deploy.
 
 Sign in with a GitHub fine-grained token:
 
-1. On GitHub: **Settings → Developer settings → Fine-grained tokens → Generate new token**.
+1. In the panel, choose **Sign In Using Access Token** and follow the link to GitHub (or go to **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**).
 2. Repository access: **Only select repositories** → your blog.
 3. Permissions: **Contents → Read and write**.
 4. Paste the token in the panel.
@@ -71,7 +71,7 @@ The panel's fields are set in `public/admin/config.yml`; keep them in sync with 
 
 ## Deploy
 
-On Cloudflare (already configured): **Workers & Pages → Create → Import a repository**, or use the button. Every push to `main` is published.
+On Cloudflare (already configured): **Workers & Pages → Create → Import a repository**, or use the button. Every push to `main` is published. The Worker's name is `name` in `wrangler.json`.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/pilippopilippo/astrochicken)
 
@@ -81,7 +81,6 @@ The site is fully static. For another host, remove the Cloudflare adapter from `
 
 - Colors and fonts: variables at the top of `src/styles/global.css`
 - Favicon and icons: `public/`
-- Stock photo hosts allowed for covers: `src/utils/remote-images.mjs`
 
 ## License
 

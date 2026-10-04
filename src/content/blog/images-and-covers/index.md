@@ -8,6 +8,7 @@ tags:
   - guide
   - images
 lang: en
+draft: false
 ---
 
 Each post lives in its own folder, together with its images:

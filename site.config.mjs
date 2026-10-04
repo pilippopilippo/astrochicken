@@ -8,4 +8,6 @@ export default {
 	url: "https://example.com",
 	// GitHub repository ("owner/name") and branch the writing panel at /admin/ saves posts to
 	github: { repo: "your-name/your-blog", branch: "main" },
+	// Footer text, after "Ⓐ <year> <title>." (e.g. "All rights reserved.")
+	footer: "No rights reserved.",
 };

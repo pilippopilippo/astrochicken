@@ -24,9 +24,8 @@ media_libraries:
           height: 2560
       # "IMG 1234.HEIC" becomes "img-1234.webp"
       slugify_filename: true
-  # Free stock photos, saved as links: the site downloads and optimizes them when it's built, from
-  # the hosts listed in src/utils/remote-images.mjs. Pixabay and Picsum are left out:
-  # Pixabay links expire after a day, which would break later builds
+  # Free stock photos, saved as links and shown from the provider (as Unsplash and Pexels ask).
+  # Pixabay and Picsum are left out: Pixabay links expire after a day
   stock_assets:
     providers: [unsplash, pexels]
 

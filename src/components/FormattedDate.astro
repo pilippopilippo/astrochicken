@@ -8,10 +8,13 @@ const { date } = Astro.props;
 
 <time datetime={date.toISOString()}>
 	{
+		// Dates are stored as midnight UTC: show them in UTC, so a build in another time zone
+		// doesn't move them to the day before
 		date.toLocaleDateString('en-us', {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
+			timeZone: 'UTC',
 		})
 	}
 </time>

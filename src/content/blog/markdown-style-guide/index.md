@@ -8,6 +8,7 @@ tags:
   - guide
   - markdown
 lang: en
+draft: false
 ---
 
 Here is a sample of some basic Markdown syntax that can be used when writing Markdown content in Astro.

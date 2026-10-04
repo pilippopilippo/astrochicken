@@ -8,6 +8,7 @@ tags:
   - astrochicken
   - guide
 lang: en
+draft: false
 ---
 
 Astrochicken is a blog template for [Astro](https://astro.build). It's built to be read comfortably, found easily and written from anywhere, and it stays out of the way so your posts come first.

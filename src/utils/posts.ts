@@ -1,5 +1,4 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
-import { remoteImageHosts } from './remote-images.mjs';
 
 export type Post = CollectionEntry<'blog'>;
 
@@ -40,21 +39,11 @@ export function tagSlug(tag: string): string {
 
 /**
  * Whether an image is given as a URL instead of a file next to the post, e.g. a stock photo chosen
- * in the writing panel.
+ * in the writing panel. It's shown as it is, like remote images in the text of a post: nothing is
+ * downloaded at build time, so a photo removed by its provider can't break the build.
  */
 export function isRemoteImage(image: unknown): image is string {
 	return typeof image === 'string' && /^https?:\/\//.test(image);
-}
-
-/**
- * Whether a remote image can be optimized at build time: its host is allowed in
- * src/utils/remote-images.mjs. Its size is then read from the file (`inferSize`). Other remote
- * images are shown as they are, like remote images in the text of a post.
- */
-export function isOptimizableRemoteImage(image: unknown): image is string {
-	if (!isRemoteImage(image)) return false;
-	const url = new URL(image);
-	return url.protocol === 'https:' && remoteImageHosts.includes(url.hostname);
 }
 
 /** view-transition-name shared by a post's cover on the home page and in the article */

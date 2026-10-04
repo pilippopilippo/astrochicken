@@ -5,13 +5,12 @@ import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 import { SITE_TITLE } from '../consts';
-import { isOptimizableRemoteImage, isRemoteImage } from '../utils/posts';
 
 interface Props {
 	title: string;
 	description: string;
-	// A local image (e.g. a post's cover), a remote image URL (e.g. a stock photo chosen in the
-	// writing panel) or a path in public/
+	// A local image (e.g. a post's cover), a path in public/ or a remote image URL (e.g. a stock
+	// photo chosen in the writing panel), used as it is
 	image?: ImageMetadata | string;
 	author?: string;
 	/** Set on articles: marks the page as an article for social previews and search engines */
@@ -38,16 +37,11 @@ const {
 // Social previews: cover images are cropped to the recommended 1200x630 and saved as JPG,
 // which every platform (Facebook, WhatsApp, X, Telegram...) can display
 const socialImage =
-	typeof image === 'string' && !isOptimizableRemoteImage(image)
+	typeof image === 'string'
 		? { src: image, width: undefined, height: undefined }
-		: await getImage({
-				src: image,
-				inferSize: isRemoteImage(image) || undefined,
-				width: 1200,
-				height: 630,
-				fit: 'cover',
-				format: 'jpg',
-			}).then((img) => ({ src: img.src, width: 1200, height: 630 }));
+		: await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' }).then(
+				(img) => ({ src: img.src, width: 1200, height: 630 }),
+			);
 const socialImageURL = new URL(socialImage.src, Astro.url);
 const locale = { it: 'it_IT', en: 'en_US' }[lang] ?? lang;
 

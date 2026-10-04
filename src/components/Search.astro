@@ -149,7 +149,7 @@
 				.map(
 					(result) => `
 					<li>
-						<a href="${result.url}">
+						<a href="${escapeHTML(result.url)}">
 							${thumbnails[result.url] ? `<img src="${escapeHTML(thumbnails[result.url])}" alt="" loading="lazy" width="96" height="48" />` : ''}
 							<span class="result-text">
 								<span class="result-title">${escapeHTML(result.meta.title ?? result.url)}</span>

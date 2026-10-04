@@ -5,3 +5,4 @@ export const SITE_TITLE = config.title;
 export const SITE_DESCRIPTION = config.description;
 export const GITHUB_REPO = config.github.repo;
 export const GITHUB_BRANCH = config.github.branch;
+export const FOOTER_TEXT = config.footer;

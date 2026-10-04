@@ -5,7 +5,6 @@ import TagList from './TagList.astro';
 import {
 	type Post,
 	coverTransitionName,
-	isOptimizableRemoteImage,
 	isRemoteImage,
 	postTags,
 	readingMinutes,
@@ -27,8 +26,8 @@ const { posts } = Astro.props;
 				<li>
 					<a href={`/blog/${post.id}/`}>
 						{post.data.heroImage &&
-							(isRemoteImage(post.data.heroImage) && !isOptimizableRemoteImage(post.data.heroImage) ? (
-								// A remote image from a host that isn't allowed is shown as it is
+							(isRemoteImage(post.data.heroImage) ? (
+								// A remote image (e.g. a stock photo) is shown as it is
 								<img
 									src={post.data.heroImage}
 									width={i === 0 ? 960 : 720}
@@ -43,7 +42,6 @@ const { posts } = Astro.props;
 								<Image
 									width={i === 0 ? 960 : 720}
 									src={post.data.heroImage}
-									inferSize={isRemoteImage(post.data.heroImage) || undefined}
 									alt=""
 									loading={i === 0 ? 'eager' : 'lazy'}
 									fetchpriority={i === 0 ? 'high' : 'auto'}

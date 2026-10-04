@@ -8,7 +8,7 @@ import FormattedDate from '../components/FormattedDate.astro';
 import PostEnhancements from '../components/PostEnhancements.astro';
 import ReadingProgress from '../components/ReadingProgress.astro';
 import TagList from '../components/TagList.astro';
-import { coverTransitionName, isOptimizableRemoteImage, isRemoteImage, tagSlug } from '../utils/posts';
+import { coverTransitionName, isRemoteImage, tagSlug } from '../utils/posts';
 import { SITE_DESCRIPTION } from '../consts';
 
 type PostData = CollectionEntry<'blog'>['data'];
@@ -39,7 +39,12 @@ const {
 	older,
 } = Astro.props;
 // Search index (Pagefind): only articles are indexed, with their date for the results
-const searchDate = pubDate?.toLocaleDateString('en-us', { year: 'numeric', month: 'short', day: 'numeric' });
+const searchDate = pubDate?.toLocaleDateString('en-us', {
+	year: 'numeric',
+	month: 'short',
+	day: 'numeric',
+	timeZone: 'UTC',
+});
 const tagLinks = [...new Map(tags.map((label) => [tagSlug(label), label])).entries()]
 	.filter(([slug]) => slug)
 	.map(([slug, label]) => ({ slug, label }));
@@ -179,8 +184,8 @@ const tagLinks = [...new Map(tags.map((label) => [tagSlug(label), label])).entri
 				<div class="hero-image">
 					{
 						heroImage &&
-							(isRemoteImage(heroImage) && !isOptimizableRemoteImage(heroImage) ? (
-								// A remote image from a host that isn't allowed is shown as it is
+							(isRemoteImage(heroImage) ? (
+								// A remote image (e.g. a stock photo) is shown as it is
 								<img
 									src={heroImage}
 									width={1020}
@@ -194,7 +199,6 @@ const tagLinks = [...new Map(tags.map((label) => [tagSlug(label), label])).entri
 								<Image
 									width={1020}
 									src={heroImage}
-									inferSize={isRemoteImage(heroImage) || undefined}
 									alt=""
 									loading="eager"
 									fetchpriority="high"
